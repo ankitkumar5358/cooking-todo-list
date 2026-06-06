@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview - Cooking To-Do List AI</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="src/index.css">
+
+  <!-- React and ReactDOM CDNs -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  
+  <!-- Babel CDN for compiling JSX in browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React Code in Babel Script -->
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- SVG Lucide Icons ---
+    const Sparkles = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/><path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z"/><path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z"/></svg>
+    );
+
+    const Key = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3h3v-2h-2v-2h-2Z"/></svg>
+    );
+
+    const Clock = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    );
+
+    const Sun = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+    );
+
+    const CloudSun = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3.5 3.5 0 0 1 0 7Z"/></svg>
+    );
+
+    const Moon = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    );
+
+    const ShoppingCart = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+    );
+
+    const RefreshCw = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+    );
+
+    const ArrowRight = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    );
+
+    const Calculator = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+    );
+
+    const AlertTriangle = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+    );
+
+    const CheckCircle2 = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+    );
+
+    const CheckCircle = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    );
+
+    const Lightbulb = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .4 2.5 1.5 3.5.7.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+    );
+
+    const XIcon = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    );
+
+    const Eye = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+    );
+
+    const EyeOff = ({ size = 20, color = "currentColor" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline-block', verticalAlign:'middle'}}><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+    );
+
+
+    // --- SetupForm Component ---
+    function SetupForm({ formData, setFormData, onSubmit, loading, onOpenApiModal, hasApiKey }) {
+      const dietaryOptions = ['None', 'Vegetarian', 'Vegan', 'Gluten-Free', 'Keto', 'Dairy-Free', 'Low-Carb'];
+      const equipmentOptions = [
+        { id: 'stove', name: 'Stove/Cooktop' },
+        { id: 'oven', name: 'Oven' },
+        { id: 'microwave', name: 'Microwave' },
+        { id: 'airfryer', name: 'Air Fryer' },
+        { id: 'slowcooker', name: 'Slow Cooker' },
+        { id: 'blender', name: 'Blender/Processor' }
+      ];
+
+      const handleDietToggle = (diet) => {
+        let updatedDiets = [...formData.dietaryPreferences];
+        if (diet === 'None') {
+          updatedDiets = ['None'];
+        } else {
+          updatedDiets = updatedDiets.filter((d) => d !== 'None');
+          if (updatedDiets.includes(diet)) {
+            updatedDiets = updatedDiets.filter((d) => d !== diet);
+            if (updatedDiets.length === 0) updatedDiets = ['None'];
+          } else {
+            updatedDiets.push(diet);
+          }
+        }
+        setFormData({ ...formData, dietaryPreferences: updatedDiets });
+      };
+
+      const handleEquipmentToggle = (equipId) => {
+        const updatedEquip = formData.equipment.includes(equipId)
+          ? formData.equipment.filter((id) => id !== equipId)
+          : [...formData.equipment, equipId];
+        setFormData({ ...formData, equipment: updatedEquip });
+      };
+
+      return (
+        <div className="glass-card">
+          <div className="card-title">
+            <Sparkles size={22} color="#8b5cf6" />
+            <h2>Plan Your Cooking Day</h2>
+          </div>
+          <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
+            <div className="form-group">
+              <label className="form-label">Describe Your Day & Schedule</label>
+              <textarea
+                className="form-textarea"
+                placeholder="e.g. I have a packed meeting schedule from 9 AM to 6 PM, then a gym session. Need a quick energizing breakfast, an easy-to-reheat lunch, and a high-protein dinner that takes under 20 minutes."
+                value={formData.dayDescription}
+                onChange={(e) => setFormData({ ...formData, dayDescription: e.target.value })}
+                required
+                disabled={loading}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Dietary Preferences</label>
+              <div className="badge-grid">
+                {dietaryOptions.map((diet) => {
+                  const isActive = formData.dietaryPreferences.includes(diet);
+                  return (
+                    <button
+                      key={diet}
+                      type="button"
+                      className={`diet-badge ${isActive ? 'active' : ''}`}
+                      onClick={() => handleDietToggle(diet)}
+                      disabled={loading}
+                    >
+                      {diet}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Daily Cooking Budget</label>
+              <div className="budget-input-wrapper">
+                <div className="slider-container">
+                  <input
+                    type="range"
+                    min="100"
+                    max="2000"
+                    step="50"
+                    className="budget-slider"
+                    value={formData.budget}
+                    onChange={(e) => setFormData({ ...formData, budget: parseInt(e.target.value) })}
+                    disabled={loading}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    <span>₹100</span>
+                    <span>₹1000</span>
+                    <span>₹2000</span>
+                  </div>
+                </div>
+                <div className="budget-value-box">₹{formData.budget}</div>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Available Kitchen Equipment</label>
+              <div className="equipment-grid">
+                {equipmentOptions.map((equip) => {
+                  const isChecked = formData.equipment.includes(equip.id);
+                  return (
+                    <label key={equip.id} className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        className="checkbox-custom"
+                        checked={isChecked}
+                        onChange={() => handleEquipmentToggle(equip.id)}
+                        disabled={loading}
+                      />
+                      <span>{equip.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+            <button type="submit" className="btn-primary" disabled={loading || !formData.dayDescription.trim()}>
+              <Sparkles size={18} />
+              {loading ? 'Generating Recipe Todo List...' : 'Generate AI Meal Planner'}
+            </button>
+          </form>
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              {hasApiKey ? (
+                <>
+                  <CheckCircle2 size={14} color="#10b981" />
+                  <span>Gemini API Connected</span>
+                </>
+              ) : (
+                <span>Running in Demo Mode</span>
+              )}
+            </span>
+            <button type="button" className="btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }} onClick={onOpenApiModal}>
+              <Key size={12} />
+              {hasApiKey ? 'Change API Key' : 'Configure API Key'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+
+    // --- MealPlan Component ---
+    function MealPlan({ meals, checkedSteps, onStepToggle }) {
+      if (!meals) return null;
+      const mealCategories = [
+        { key: 'breakfast', label: 'Breakfast', themeClass: 'breakfast-theme', icon: <Sun size={18} color="#fbbf24" /> },
+        { key: 'lunch', label: 'Lunch', themeClass: 'lunch-theme', icon: <CloudSun size={18} color="#60a5fa" /> },
+        { key: 'dinner', label: 'Dinner', themeClass: 'dinner-theme', icon: <Moon size={18} color="#34d399" /> }
+      ];
+
+      return (
+        <div className="meals-grid">
+          {mealCategories.map((cat) => {
+            const meal = meals[cat.key];
+            if (!meal) return null;
+            return (
+              <div key={cat.key} className={`glass-card meal-card ${cat.themeClass}`}>
+                <div className="meal-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {cat.icon}
+                    <span className="meal-type">{cat.label}</span>
+                  </div>
+                  <div className="meal-time">
+                    <Clock size={12} />
+                    <span>Prep: {meal.prepTime} | Cook: {meal.cookTime}</span>
+                  </div>
+                </div>
+                <h3 className="meal-name">{meal.name}</h3>
+                <p className="meal-desc">{meal.description}</p>
+                <div style={{ marginTop: 'auto' }}>
+                  <div className="todo-section-title">Cooking To-Do List</div>
+                  <ul className="todo-list">
+                    {meal.todoList.map((step, idx) => {
+                      const stepId = `${cat.key}-${idx}`;
+                      const isChecked = !!checkedSteps[stepId];
+                      return (
+                        <li key={idx} className="todo-item" onClick={() => onStepToggle(cat.key, idx)}>
+                          <input type="checkbox" className="todo-checkbox" checked={isChecked} readOnly />
+                          <span className="todo-text">{step}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+
+    // --- GroceryList Component ---
+    function GroceryList({ groceryList, checkedIngredients, onIngredientToggle, activeSubstitutions, substitutions }) {
+      if (!groceryList || groceryList.length === 0) return null;
+      const subMap = {};
+      if (substitutions) {
+        substitutions.forEach((sub) => {
+          subMap[sub.original.toLowerCase()] = sub;
+        });
+      }
+
+      const categories = {};
+      groceryList.forEach((item) => {
+        const lowerItemName = item.item.toLowerCase();
+        let displayItemName = item.item;
+        let displayCost = item.estimatedCost;
+        let isSubbed = false;
+        let originalName = '';
+
+        const matchedOriginal = Object.keys(subMap).find(
+          (orig) => lowerItemName.includes(orig) || orig.includes(lowerItemName)
+        );
+
+        if (matchedOriginal && activeSubstitutions[subMap[matchedOriginal].original]) {
+          const sub = subMap[matchedOriginal];
+          originalName = item.item;
+          displayItemName = sub.substituted;
+          displayCost = Math.max(1, item.estimatedCost + sub.costDifference);
+          isSubbed = true;
+        }
+
+        const cat = item.category || 'Other';
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push({
+          id: item.item,
+          originalName,
+          displayName: displayItemName,
+          quantity: item.quantity,
+          cost: displayCost,
+          isSubbed
+        });
+      });
+
+      return (
+        <div className="glass-card">
+          <div className="card-title">
+            <ShoppingCart size={22} color="#3b82f6" />
+            <h2>Grocery Shopping List</h2>
+          </div>
+          <div style={{ maxHeight: '420px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+            {Object.keys(categories).map((catName) => (
+              <div key={catName} className="grocery-category">
+                <h4 className="grocery-category-title">{catName}</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  {categories[catName].map((item, idx) => {
+                    const isChecked = !!checkedIngredients[item.id];
+                    return (
+                      <div key={idx} className="grocery-item-row">
+                        <label className="grocery-item-left" style={{ cursor: 'pointer', flex: 1 }} onClick={() => onIngredientToggle(item.id)}>
+                          <input type="checkbox" className="todo-checkbox" checked={isChecked} readOnly />
+                          <span className={isChecked ? 'grocery-item-checked' : ''}>
+                            {item.isSubbed ? (
+                              <>
+                                <span className="grocery-original-crossed">{item.originalName}</span>
+                                <span>{item.displayName}</span>
+                                <span className="substituted-label">Subbed</span>
+                              </>
+                            ) : (
+                              <span>{item.displayName}</span>
+                            )}
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginLeft: '0.5rem' }}>
+                              ({item.quantity})
+                            </span>
+                          </span>
+                        </label>
+                        <span className="grocery-cost">₹{item.cost.toFixed(0)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+
+    // --- Substitutions Component ---
+    function Substitutions({ substitutions, activeSubstitutions, onSubstitutionToggle }) {
+      if (!substitutions || substitutions.length === 0) {
+        return (
+          <div className="glass-card">
+            <div className="card-title">
+              <RefreshCw size={22} color="#a855f7" />
+              <h2>Smart Ingredient Substitutions</h2>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center', padding: '1.5rem 0' }}>
+              No substitutions recommended for this meal plan.
+            </p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="glass-card">
+          <div className="card-title">
+            <RefreshCw size={22} color="#a855f7" />
+            <h2>Smart Ingredient Substitutions</h2>
+          </div>
+          <div className="sub-list">
+            {substitutions.map((sub, idx) => {
+              const isActive = !!activeSubstitutions[sub.original];
+              const isSaving = sub.costDifference < 0;
+              const diffAbs = Math.abs(sub.costDifference);
+
+              return (
+                <div key={idx} className="sub-item-card">
+                  <div className="sub-header-row">
+                    <div className="sub-titles">
+                      <span style={{ color: 'var(--text-secondary)' }}>{sub.original}</span>
+                      <ArrowRight size={14} className="sub-arrow" />
+                      <span style={{ color: '#ffffff' }}>{sub.substituted}</span>
+                    </div>
+                    <label className="switch-control">
+                      <input
+                        type="checkbox"
+                        checked={isActive}
+                        onChange={() => onSubstitutionToggle(sub.original)}
+                      />
+                      <span className="switch-slider"></span>
+                    </label>
+                  </div>
+                  <div className="sub-reason">{sub.reason}</div>
+                  <div className="sub-cost-impact">
+                    {sub.costDifference === 0 ? (
+                      <span className="cost-neutral">Cost Impact: Neutral</span>
+                    ) : isSaving ? (
+                      <span className="cost-saving">Saves ₹{diffAbs.toFixed(0)}</span>
+                    ) : (
+                      <span className="cost-increase">Adds ₹{diffAbs.toFixed(0)}</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+
+    // --- BudgetFeasibility Component ---
+    function BudgetFeasibility({ budgetLimit, actualCost, analysis }) {
+      if (!analysis) return null;
+      const percentUsed = Math.min(150, (actualCost / budgetLimit) * 100);
+      
+      let status = 'feasible';
+      let alertClass = 'alert-feasible';
+      let statusText = 'Under Budget (Feasible)';
+      let statusIcon = <CheckCircle size={18} color="#10b981" />;
+
+      if (actualCost > budgetLimit) {
+        status = 'over';
+        alertClass = 'alert-over';
+        statusText = 'Over Budget';
+        statusIcon = <AlertTriangle size={18} color="#f43f5e" />;
+      } else if (percentUsed >= 85) {
+        status = 'warning';
+        alertClass = 'alert-feasible';
+        statusText = 'Near Budget Limit';
+        statusIcon = <AlertTriangle size={18} color="#f59e0b" />;
+      }
+
+      return (
+        <div className="glass-card" style={{ height: '100%' }}>
+          <div className="card-title">
+            <Calculator size={22} color="#10b981" />
+            <h2>Budget Feasibility</h2>
+          </div>
+          <div className="budget-meter-container">
+            <div className="budget-stats-row">
+              <div className="stat-box">
+                <span className="stat-label">Daily Limit</span>
+                <span className="stat-value value-total">₹{budgetLimit.toFixed(0)}</span>
+              </div>
+              <div className="stat-box" style={{ alignItems: 'flex-end' }}>
+                <span className="stat-label">Estimated Cost</span>
+                <span className={`stat-value value-actual ${status}`}>₹{actualCost.toFixed(0)}</span>
+              </div>
+            </div>
+            <div className="feasibility-bar-track">
+              <div className={`feasibility-bar-fill ${status}`} style={{ width: `${percentUsed}%` }}></div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <span>0%</span>
+              <span>50%</span>
+              <span>100% (Limit)</span>
+            </div>
+          </div>
+          <div className={`budget-alert ${alertClass}`} style={{ marginBottom: '1.5rem' }}>
+            <div style={{ marginTop: '0.15rem' }}>{statusIcon}</div>
+            <div>
+              <strong style={{ display: 'block', marginBottom: '0.25rem' }}>{statusText}</strong>
+              {analysis.feedback || `Your meal plan is estimated to cost ₹${actualCost.toFixed(0)} out of your ₹${budgetLimit.toFixed(0)} budget.`}
+            </div>
+          </div>
+          {analysis.savingTips && analysis.savingTips.length > 0 && (
+            <div className="saving-tips-container">
+              <div className="tips-title">
+                <Lightbulb size={14} color="#f59e0b" />
+                <span>AI Cost-Saving Recommendations</span>
+              </div>
+              <ul className="tips-list">
+                {analysis.savingTips.map((tip, idx) => <li key={idx}>{tip}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+
+    // --- Main App Orchestrator ---
+    function App() {
+      const [formData, setFormData] = useState({
+        dayDescription: '',
+        dietaryPreferences: ['None'],
+        budget: 500,
+        equipment: ['stove', 'microwave']
+      });
+
+      const [apiKey, setApiKey] = useState('');
+      const [showApiModal, setShowApiModal] = useState(false);
+      const [tempApiKey, setTempApiKey] = useState('');
+      const [showKeyVisible, setShowKeyVisible] = useState(false);
+      
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState(null);
+      const [plan, setPlan] = useState(null);
+
+      const [checkedSteps, setCheckedSteps] = useState({});
+      const [checkedIngredients, setCheckedIngredients] = useState({});
+      const [activeSubstitutions, setActiveSubstitutions] = useState({});
+      const [actualCost, setActualCost] = useState(0);
+
+      useEffect(() => {
+        const savedKey = localStorage.getItem('gemini_api_key');
+        if (savedKey) {
+          setApiKey(savedKey);
+          setTempApiKey(savedKey);
+        }
+      }, []);
+
+      useEffect(() => {
+        if (!plan) return;
+        const subMap = {};
+        plan.substitutions.forEach((sub) => {
+          subMap[sub.original.toLowerCase()] = sub;
+        });
+
+        let total = 0;
+        plan.groceryList.forEach((item) => {
+          const lowerItemName = item.item.toLowerCase();
+          const matchedOriginal = Object.keys(subMap).find(
+            (orig) => lowerItemName.includes(orig) || orig.includes(lowerItemName)
+          );
+
+          if (matchedOriginal && activeSubstitutions[subMap[matchedOriginal].original]) {
+            const sub = subMap[matchedOriginal];
+            total += Math.max(1, item.estimatedCost + sub.costDifference);
+          } else {
+            total += item.estimatedCost;
+          }
+        });
+        setActualCost(total);
+      }, [plan, activeSubstitutions]);
+
+      const handleSaveApiKey = () => {
+        localStorage.setItem('gemini_api_key', tempApiKey.trim());
+        setApiKey(tempApiKey.trim());
+        setShowApiModal(false);
+      };
+
+      const handleClearApiKey = () => {
+        localStorage.removeItem('gemini_api_key');
+        setApiKey('');
+        setTempApiKey('');
+        setShowApiModal(false);
+      };
+
+      const handleStepToggle = (mealType, idx) => {
+        const key = `${mealType}-${idx}`;
+        setCheckedSteps((prev) => ({ ...prev, [key]: !prev[key] }));
+      };
+
+      const handleIngredientToggle = (itemId) => {
+        setCheckedIngredients((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
+      };
+
+      const handleSubstitutionToggle = (originalName) => {
+        setActiveSubstitutions((prev) => ({ ...prev, [originalName]: !prev[originalName] }));
+      };
+
+      const runDemoMode = () => {
+        setLoading(true);
+        setError(null);
+        setTimeout(() => {
+          const isVegan = formData.dietaryPreferences.includes('Vegan');
+          const isVeg = formData.dietaryPreferences.includes('Vegetarian') || isVegan;
+          
+          const mockPlan = {
+            daySummary: `Since your day is described as "${formData.dayDescription.substring(0, 45)}...", we have planned a balanced schedule of high-energy meals. This fits your ₹${formData.budget} budget and requires only your selected kitchen equipment.`,
+            meals: {
+              breakfast: {
+                name: isVeg ? 'Maple Pecan Oatmeal' : 'Fluffy Scrambled Eggs & Toast',
+                prepTime: '5 mins',
+                cookTime: '5 mins',
+                description: 'A quick, low-cleanup breakfast designed to start your day efficiently.',
+                todoList: [
+                  isVeg ? 'Boil oats in almond milk' : 'Whisk eggs with a splash of milk',
+                  isVeg ? 'Stir in maple syrup and cinnamon' : 'Melt butter on skillet, scramble eggs gently',
+                  'Toast whole grain bread',
+                  'Assemble on a plate and enjoy immediately'
+                ],
+                ingredients: [
+                  isVeg ? '1 cup Rolled Oats' : '3 Fresh Eggs',
+                  '1 slice Whole Grain Bread',
+                  isVeg ? '1 cup Almond Milk' : '1 tbsp Butter',
+                  isVeg ? '2 tbsp Pecans & Maple Syrup' : 'Salt & pepper to taste'
+                ]
+              },
+              lunch: {
+                name: isVeg ? 'Avocado & Chickpea Salad Wrap' : 'Smoked Turkey & Cheese Club Wrap',
+                prepTime: '10 mins',
+                cookTime: '0 mins',
+                description: 'No cooking required, perfect for saving time mid-day.',
+                todoList: [
+                  isVeg ? 'Mash chickpeas and avocados together' : 'Slice smoked turkey and cheddar cheese',
+                  'Lay out whole wheat tortilla wrap',
+                  'Spread salad greens and tomatoes',
+                  'Fold wrap tightly and slice in half'
+                ],
+                ingredients: [
+                  '1 Whole Wheat Tortilla',
+                  isVeg ? '1/2 cup Canned Chickpeas' : '4 slices Smoked Turkey',
+                  isVeg ? '1/2 Avocado' : '2 slices Cheddar Cheese',
+                  '1 cup Mixed Salad Greens',
+                  '1 small Tomato'
+                ]
+              },
+              dinner: {
+                name: isVeg ? 'Crispy Garlic Tofu & Broccoli Fry' : 'Quick Garlic Chicken & Broccoli Stir-Fry',
+                prepTime: '10 mins',
+                cookTime: '10 mins',
+                description: 'A protein-rich dinner using basic equipment, rich in flavor and fast to make.',
+                todoList: [
+                  isVeg ? 'Press and cube tofu' : 'Cut chicken breast into bite-sized pieces',
+                  'Chop fresh broccoli florets',
+                  'Heat cooking oil in skillet/stove',
+                  isVeg ? 'Sauté tofu until golden, add broccoli' : 'Cook chicken until done, toss in broccoli',
+                  'Pour in low-sodium soy sauce and minced garlic',
+                  'Cook for 3 additional minutes and plate'
+                ],
+                ingredients: [
+                  isVeg ? '1 block Firm Tofu' : '1 Chicken Breast',
+                  '1 head Fresh Broccoli',
+                  '2 cloves Minced Garlic',
+                  '2 tbsp Soy Sauce & Olive Oil'
+                ]
+              }
+            },
+            groceryList: [
+              { item: 'Whole Grain Bread', category: 'Pantry', quantity: '1 loaf', estimatedCost: 50 },
+              { item: 'Whole Wheat Tortillas', category: 'Pantry', quantity: '1 pack', estimatedCost: 60 },
+              { item: 'Mixed Salad Greens', category: 'Produce', quantity: '1 bag', estimatedCost: 80 },
+              { item: 'Fresh Broccoli', category: 'Produce', quantity: '1 head', estimatedCost: 40 },
+              { item: 'Fresh Tomatoes', category: 'Produce', quantity: '2 count', estimatedCost: 20 },
+              { item: 'Fresh Garlic', category: 'Produce', quantity: '1 bulb', estimatedCost: 10 },
+              ...(isVeg 
+                ? [
+                    { item: 'Rolled Oats', category: 'Pantry', quantity: '1 bag', estimatedCost: 60 },
+                    { item: 'Almond Milk', category: 'Refrigerated', quantity: '1 carton', estimatedCost: 70 },
+                    { item: 'Pecans & Maple Syrup', category: 'Pantry', quantity: '1 set', estimatedCost: 200 },
+                    { item: 'Canned Chickpeas', category: 'Pantry', quantity: '1 can', estimatedCost: 40 },
+                    { item: 'Fresh Avocado', category: 'Produce', quantity: '1 count', estimatedCost: 120 },
+                    { item: 'Firm Tofu', category: 'Refrigerated', quantity: '1 block', estimatedCost: 60 }
+                  ]
+                : [
+                    { item: 'Fresh Eggs', category: 'Refrigerated', quantity: '1 carton', estimatedCost: 90 },
+                    { item: 'Unsalted Butter', category: 'Refrigerated', quantity: '1 block', estimatedCost: 60 },
+                    { item: 'Smoked Turkey slices', category: 'Meat', quantity: '1 pack', estimatedCost: 350 },
+                    { item: 'Cheddar Cheese slices', category: 'Refrigerated', quantity: '1 pack', estimatedCost: 150 },
+                    { item: 'Chicken Breast', category: 'Meat', quantity: '1 lb', estimatedCost: 280 }
+                  ]
+              )
+            ],
+            substitutions: [
+              ...(isVeg 
+                ? [
+                    { original: 'Almond Milk', substituted: 'Water', reason: 'Zero-cost milk substitute for oatmeal', costDifference: -70 },
+                    { original: 'Pecans & Maple Syrup', substituted: 'Brown Sugar', reason: 'Lower budget sweetener alternative', costDifference: -150 }
+                  ]
+                : [
+                    { original: 'Smoked Turkey slices', substituted: 'Canned Tuna', reason: 'Budget-friendly lean protein alternative', costDifference: -200 },
+                    { original: 'Chicken Breast', substituted: 'Block Tofu', reason: 'Affordable, long-lasting protein substitute', costDifference: -200 }
+                  ]
+              )
+            ],
+            budgetAnalysis: {
+              totalEstimatedCost: isVeg ? 500 : 990,
+              isFeasible: isVeg ? (500 <= formData.budget) : (990 <= formData.budget),
+              feedback: isVeg 
+                ? `At ₹500, this meal plan is within your ₹${formData.budget} budget. Toggling substitutions can save you even more!`
+                : `At ₹990, this exceeds your ₹${formData.budget} budget slightly. Try enabling the turkey/chicken substitutions to make it feasible.`,
+              savingTips: [
+                'Buy bulk grains and local store vegetables',
+                'Substitute meat or specialty milks to reduce total cost significantly',
+                'Cook larger batches to save prep energy and ingredient costs'
+              ]
+            }
+          };
+
+          setPlan(mockPlan);
+          setCheckedSteps({});
+          setCheckedIngredients({});
+          setActiveSubstitutions({});
+          setLoading(false);
+        }, 1500);
+      };
+
+      const handleGeneratePlan = async () => {
+        if (!apiKey) {
+          runDemoMode();
+          return;
+        }
+
+        setLoading(true);
+        setError(null);
+        setPlan(null);
+
+        const dietText = formData.dietaryPreferences.join(', ');
+        const equipText = formData.equipment.join(', ');
+        const prompt = `
+          You are a professional chef and budget analyst. Generate a structured daily cooking todo list and meal plan for a user based on their day:
+          - Day Description/Schedule: "${formData.dayDescription}"
+          - Dietary Preferences: ${dietText}
+          - Daily Budget Limit: ₹${formData.budget} INR
+          - Kitchen Equipment Available: ${equipText}
+
+          Your task is to respond with a JSON object. Ensure all prices are in INR (Indian Rupees) and are realistic for Indian household portions, aiming to fit within the budget.
+          The meals must be breakfast, lunch, and dinner. Provide detailed, step-by-step todo items for preparing each meal that match the user's schedule.
+          Recommend 2-3 smart substitutions to save money or simplify prep, stating the exact difference in cost (negative numbers for savings, positive for increases).
+          Provide a budget analysis summarizing the feasibility and giving 3 cost-saving tips.
+        `;
+
+        try {
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                  responseMimeType: 'application/json',
+                  responseSchema: {
+                    type: 'OBJECT',
+                    properties: {
+                      daySummary: { type: 'STRING' },
+                      meals: {
+                        type: 'OBJECT',
+                        properties: {
+                          breakfast: {
+                            type: 'OBJECT',
+                            properties: {
+                              name: { type: 'STRING' },
+                              prepTime: { type: 'STRING' },
+                              cookTime: { type: 'STRING' },
+                              description: { type: 'STRING' },
+                              todoList: { type: 'ARRAY', items: { type: 'STRING' } },
+                              ingredients: { type: 'ARRAY', items: { type: 'STRING' } }
+                            },
+                            required: ['name', 'prepTime', 'cookTime', 'description', 'todoList', 'ingredients']
+                          },
+                          lunch: {
+                            type: 'OBJECT',
+                            properties: {
+                              name: { type: 'STRING' },
+                              prepTime: { type: 'STRING' },
+                              cookTime: { type: 'STRING' },
+                              description: { type: 'STRING' },
+                              todoList: { type: 'ARRAY', items: { type: 'STRING' } },
+                              ingredients: { type: 'ARRAY', items: { type: 'STRING' } }
+                            },
+                            required: ['name', 'prepTime', 'cookTime', 'description', 'todoList', 'ingredients']
+                          },
+                          dinner: {
+                            type: 'OBJECT',
+                            properties: {
+                              name: { type: 'STRING' },
+                              prepTime: { type: 'STRING' },
+                              cookTime: { type: 'STRING' },
+                              description: { type: 'STRING' },
+                              todoList: { type: 'ARRAY', items: { type: 'STRING' } },
+                              ingredients: { type: 'ARRAY', items: { type: 'STRING' } }
+                            },
+                            required: ['name', 'prepTime', 'cookTime', 'description', 'todoList', 'ingredients']
+                          }
+                        },
+                        required: ['breakfast', 'lunch', 'dinner']
+                      },
+                      groceryList: {
+                        type: 'ARRAY',
+                        items: {
+                          type: 'OBJECT',
+                          properties: {
+                            item: { type: 'STRING' },
+                            category: { type: 'STRING' },
+                            quantity: { type: 'STRING' },
+                            estimatedCost: { type: 'NUMBER' }
+                          },
+                          required: ['item', 'category', 'quantity', 'estimatedCost']
+                        }
+                      },
+                      substitutions: {
+                        type: 'ARRAY',
+                        items: {
+                          type: 'OBJECT',
+                          properties: {
+                            original: { type: 'STRING' },
+                            substituted: { type: 'STRING' },
+                            reason: { type: 'STRING' },
+                            costDifference: { type: 'NUMBER' }
+                          },
+                          required: ['original', 'substituted', 'reason', 'costDifference']
+                        }
+                      },
+                      budgetAnalysis: {
+                        type: 'OBJECT',
+                        properties: {
+                          totalEstimatedCost: { type: 'NUMBER' },
+                          isFeasible: { type: 'BOOLEAN' },
+                          feedback: { type: 'STRING' },
+                          savingTips: { type: 'ARRAY', items: { type: 'STRING' } }
+                        },
+                        required: ['totalEstimatedCost', 'isFeasible', 'feedback', 'savingTips']
+                      }
+                    },
+                    required: ['daySummary', 'meals', 'groceryList', 'substitutions', 'budgetAnalysis']
+                  }
+                }
+              })
+            }
+          );
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error?.message || `API error: ${res.statusText}`);
+          }
+
+          const data = await res.json();
+          if (!data.candidates || data.candidates.length === 0) {
+            throw new Error('No candidate content received from Gemini.');
+          }
+
+          const text = data.candidates[0].content.parts[0].text;
+          const parsedData = JSON.parse(text);
+
+          setPlan(parsedData);
+          setCheckedSteps({});
+          setCheckedIngredients({});
+          setActiveSubstitutions({});
+        } catch (err) {
+          console.error(err);
+          setError(err.message || 'An unexpected error occurred while communicating with Gemini.');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="app-container">
+          <header className="app-header">
+            <div className="logo-container">
+              <span className="logo-icon">🍳</span>
+              <div>
+                <h1 className="app-title">Cooking To-Do List</h1>
+                <p className="app-subtitle">Structured Meal Planner & Cooking To-Do Lists</p>
+              </div>
+            </div>
+            <div className="config-bar">
+              <button className="btn-secondary" onClick={() => setShowApiModal(true)}>🔧 API Keys</button>
+            </div>
+          </header>
+
+          <main className="main-grid">
+            <SetupForm
+              formData={formData}
+              setFormData={setFormData}
+              onSubmit={handleGeneratePlan}
+              loading={loading}
+              onOpenApiModal={() => setShowApiModal(true)}
+              hasApiKey={!!apiKey}
+            />
+
+            <div className="dashboard-layout">
+              {loading ? (
+                <div className="glass-card loading-container">
+                  <div className="spinner"></div>
+                  <div className="loading-text">Crafting Your Cooking To-Do List...</div>
+                  <div className="loading-subtext">Optimizing recipes, grocery costs, and schedule fit</div>
+                </div>
+              ) : error ? (
+                <div className="glass-card" style={{ borderColor: 'var(--accent-rose)', background: 'rgba(244, 63, 94, 0.05)' }}>
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
+                    <AlertTriangle color="var(--accent-rose)" size={24} />
+                    <h3 style={{ color: 'var(--accent-rose)' }}>Plan Generation Failed</h3>
+                  </div>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.6' }}>{error}</p>
+                  <button className="btn-secondary" onClick={handleGeneratePlan}>Try Again</button>
+                </div>
+              ) : plan ? (
+                <>
+                  <div className="glass-card summary-banner">
+                    <p className="summary-text">{plan.daySummary}</p>
+                  </div>
+
+                  <MealPlan meals={plan.meals} checkedSteps={checkedSteps} onStepToggle={handleStepToggle} />
+
+                  <div className="dashboard-bottom-grid">
+                    <GroceryList
+                      groceryList={plan.groceryList}
+                      checkedIngredients={checkedIngredients}
+                      onIngredientToggle={handleIngredientToggle}
+                      activeSubstitutions={activeSubstitutions}
+                      substitutions={plan.substitutions}
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      <BudgetFeasibility budgetLimit={formData.budget} actualCost={actualCost} analysis={plan.budgetAnalysis} />
+                      <Substitutions substitutions={plan.substitutions} activeSubstitutions={activeSubstitutions} onSubstitutionToggle={handleSubstitutionToggle} />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="glass-card blank-state">
+                  <span className="blank-icon">🍽️</span>
+                  <h3 className="blank-title">Your Cooking To-Do List is Empty</h3>
+                  <p className="blank-desc">Fill in the details about your day on the left panel, configure your budget, and generate your custom schedule-matched cooking plan!</p>
+                  {!apiKey && (
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      Tip: You don't have a Gemini API key set. Pressing Generate will run in <strong>Demo Mode</strong> to showcase the app instantly.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </main>
+
+          {showApiModal && (
+            <div className="modal-overlay">
+              <div className="glass-card modal-content">
+                <div className="modal-header">
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>🔑 Configure Gemini API Key</h3>
+                  <button className="btn-flat" style={{ padding: '0.25rem', borderRadius: '50%' }} onClick={() => setShowApiModal(false)}>
+                    <XIcon size={18} />
+                  </button>
+                </div>
+                <p className="modal-desc">To generate dynamic real-time meal planning, input your Google Gemini API Key. It is stored locally in your browser's <code>localStorage</code>.</p>
+                <div className="api-key-input-wrapper">
+                  <input
+                    type={showKeyVisible ? 'text' : 'password'}
+                    className="api-input"
+                    placeholder="AIzaSy..."
+                    value={tempApiKey}
+                    onChange={(e) => setTempApiKey(e.target.value)}
+                  />
+                  <button type="button" className="api-eye-btn" onClick={() => setShowKeyVisible(!showKeyVisible)}>
+                    {showKeyVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <div className="modal-buttons">
+                  {apiKey && (
+                    <button className="btn-secondary" style={{ marginRight: 'auto', color: 'var(--accent-rose)', borderColor: 'rgba(244, 63, 94, 0.2)' }} onClick={handleClearApiKey}>Clear Key</button>
+                  )}
+                  <button className="btn-flat" onClick={() => setShowApiModal(false)}>Cancel</button>
+                  <button className="btn-primary" style={{ width: 'auto', marginTop: 0, padding: '0.625rem 1.25rem' }} onClick={handleSaveApiKey} disabled={!tempApiKey.trim()}>Save Connection</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Render the App
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
